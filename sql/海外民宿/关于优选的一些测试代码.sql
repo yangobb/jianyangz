@@ -1,0 +1,74 @@
+
+-- 各个底表的数据量
+-- select count(1)
+-- -- from pdb_analysis_c.ads_house_yx_bottom_oversea_test_d
+-- from pdb_analysis_b.dwd_house_label_1000487_test_d
+-- -- from pdb_analysis_b.dwd_house_label_1000487_d
+-- where dt = date_sub(current_date,1)
+
+
+-- 结果表与中间表反向匹配
+-- select b.*
+-- from (
+--     select house_id 
+--     from pdb_analysis_b.dwd_house_label_1000487_test_d
+--     where dt = date_sub(current_date,1)
+-- ) a 
+-- left join (
+--     select *
+--     from pdb_analysis_c.ads_house_yx_bottom_oversea_test_d 
+--     where dt = date_sub(current_date,1)
+-- ) b 
+-- on a.house_id = b.house_id
+
+
+-- 白名单测试
+-- select b.*
+-- from (
+--     select
+--         house_id
+--     from excel_upload.oversea_yx_white_list
+-- ) a 
+-- inner join (
+--     select house_id
+--         ,house_name 
+--     from dws.dws_house_d 
+--     where dt = date_sub(current_date,1) 
+--     and house_city_name = '首尔'
+--     and house_is_online = 1 
+-- ) b 
+-- on a.house_id = b.house_id 
+-- left join (
+--     select type 
+--         ,concat_ws('|',collect_set(brand)) check_info 
+--     from excel_upload.houses_level_info0312v1	
+--     group by 1
+-- ) c 
+-- on 1 = 1 
+-- where regexp_like(house_name,check_info) = 1 
+
+
+-- 结果表酒店名称测试
+-- select b.*
+-- from (
+--     select house_id 
+--     from pdb_analysis_b.dwd_house_label_1000487_test_d
+--     where dt = date_sub(current_date,1)
+-- ) a 
+-- inner join (
+--     select house_id
+--         ,house_name 
+--     from dws.dws_house_d 
+--     where dt = date_sub(current_date,1) 
+--     and house_city_name = '首尔'
+--     and house_is_online = 1 
+-- ) b 
+-- on a.house_id = b.house_id 
+-- left join (
+--     select type 
+--         ,concat_ws('|',collect_set(brand)) check_info 
+--     from excel_upload.houses_level_info0312v1	
+--     group by 1
+-- ) c 
+-- on 1 = 1 
+-- where regexp_like(house_name,check_info) = 1 
