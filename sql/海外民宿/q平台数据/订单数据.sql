@@ -1,29 +1,21 @@
-
-select substr(checkout_date,1,7) month 
-    ,country_name
-    ,city_name
-	,count(distinct order_no) order_cnt
-    ,sum(room_night) night 
-    ,sum(final_room_fee) gmv 
+select  
+    case when checkout_date between '2026-05-01' and '2026-05-05' then '2026五一'
+         when checkout_date between '2025-05-01' and '2025-05-05' then '2025五一'
+    end as period_name
+    ,count(distinct order_no) order_num
+    ,sum(room_night) night
+    ,sum(final_gmv) gmv
 from (
     select *
-    from default.mdw_order_v3_international
-    where dt = '%(DATE)s'
+    from hotel.dwd_ord_wide_order_detail_di
+    where (
+        checkout_date between '2026-05-01' and '2026-05-05'
+        or checkout_date between '2025-05-01' and '2025-05-05'
+        )
+    and is_mainland_china = 1 
     and is_valid = '1'
-    and order_status not in ('CANCELLED','REJECTED')
-    and checkout_date between '2024-01-01' and date_sub(current_date,1)
+    and order_status not in ('CANCELLED','REJECTED') --剔除取消和拒单、
+    and (distributor_package ='非打包' or distributor_package is null) --非打包
+    and buyout_type not in('免费房','广告免房','试睡免房') --非免房 
 ) a 
-inner join (
-    select hotel_seq
-        ,case when hotelSubCategory in ('0','501','503','504','505','506','507','509','510','512','513','514','515','517','521','522','523','524','525','561') then '非标' else '标' end hotelSubCategory
-    from (
-    select hotel_seq
-        ,max(attrs['hotelSubCategory']) as hotelSubCategory
-    from ihotel_default.dim_hotel_info_intl_v3 a
-    where dt = '%(DATE)s'
-    and hotel_operating_status = '营业中'
-    group by 1
-    ) tmp
-) b 
-on a.hotel_seq = b.hotel_seq
-group by 1,2,3 
+group by 1
