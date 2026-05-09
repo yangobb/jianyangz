@@ -2,7 +2,8 @@ select
     case when checkout_date between '2026-05-01' and '2026-05-05' then '2026五一'
          when checkout_date between '2025-05-01' and '2025-05-05' then '2025五一'
          end as period_name
-    ,city_name_info
+    --,city_name_info
+    ,is_standard
     ,count(distinct order_no) order_num
     ,sum(room_night) night
     ,sum(final_gmv) gmv
@@ -22,5 +23,27 @@ from (
     and order_status not in ('CANCELLED','REJECTED') --剔除取消和拒单、
     and (distributor_package ='非打包' or distributor_package is null) --非打包
     and buyout_type not in('免费房','广告免房','试睡免房') --非免房 
-) a 
+) a  
+left join (
+    select b.hotel_seq
+        ,case when is_standard = 1 then 'Q酒店' when is_standard = 0 then 'Q非标' end is_standard
+    from (
+        select masterhotelid
+            ,is_standard
+        from app_ctrip.dimmasterhotel
+        where d = date_sub(current_date,1)
+        and is_standard in (0,1)
+    ) a 
+    join (
+        select 
+            hotel_seq
+            ,partner_hotel_id --为了映射C酒店ID
+        from default.dim_hotel_mapping_v3
+        where dt = date_sub(current_date,1)
+        and partner = 'ctrip' 
+        group by 1,2 
+    ) b 
+    on a.masterhotelid = b.partner_hotel_id
+) b 
+on a.hotel_seq = b.hotel_seq 
 group by 1,2
