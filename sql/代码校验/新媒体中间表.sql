@@ -54,8 +54,9 @@ left join (
 on t1.query = t11.query 
 left join (
     select query
+        ,uid
+        ,house_id 
         ,case when channel = 'tujia2' then 'M站' else channel end channel
-        ,house_id
         ,case when dt = date_sub(current_date,1) then '1' end is_t1_flow
     from ads.ads_flow_tujia_redbook_shuangliu_recommend_d 
     where dt >= '2026-03-01'
@@ -176,9 +177,6 @@ left join (
     on t2.order_no = t4.order_no 
     group by 1,2,3,4,5,16 
     union all 
-
-
-    
     select  
         '累计' dt
         ,is_overseas
