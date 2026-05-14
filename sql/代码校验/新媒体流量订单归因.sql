@@ -111,6 +111,7 @@ from (
     ) a 
     where rn = 1 
     union all 
+    
     select order_no,
         order_time, 
         order_status,
