@@ -8,6 +8,7 @@ select t1.query
     ,is_overseas
     ,is_t1
     ,is_t1_flow
+    ,uid 
     ,count(distinct dt,uid) uv 
 from (
     -- query生成
@@ -73,14 +74,13 @@ left join (
     where dt = date_sub(current_date,1)
 ) t13 
 on t1.house_id = t13.house_id 
-group by 1,2,3,4,5,6,7 
+group by 1,2,3,4,5,6,7,8
 )
 ,query_od as (
 select * 
     ,case when is_new = 'tujia2' then 'M站' else is_new end channel
 from pdb_analysis_c.ads_order_tujia_redbook_shuangliu_recommend_all_d
 )
-
 
 select t.dt
     ,t.is_overseas
@@ -127,12 +127,12 @@ left join (
             ,t1.team
             ,t1.pro_channel
             ,nvl(t1.channel,'other') is_new
-            ,count(distinct case when is_t1_flow = 1 then concat(t2.dt,t2.uid) end) as uv
-            ,count(distinct case when is_t1_flow = 1 and t2.order_time is not null then concat(to_date(t2.order_time),t4.uid) end) as yd_uv
+            ,count(distinct case when is_t1_flow = 1 then concat(t2.dt,t2.uid,t2.query) end) as uv
+            ,count(distinct case when is_t1_flow = 1 and t2.order_time is not null then concat(to_date(t2.order_time),t4.uid,t2.query) end) as yd_uv
             ,sum(case when is_t1_flow = 1 then t4.order_num end) as yd_ord
             ,sum(case when is_t1_flow = 1 then t4.night end) as yd_jianye
             ,sum(case when is_t1_flow = 1 then t4.gmv end) as yd_gmv
-            ,count(distinct case when is_t1_flow = 1 and t2.order_time is not null then concat(to_date(t2.order_time),t3.uid) end) as ld_uv
+            ,count(distinct case when is_t1_flow = 1 and t2.order_time is not null then concat(to_date(t2.order_time),t3.uid,t2.query) end) as ld_uv
             ,sum(case when is_t1_flow = 1 then t3.order_num end) as ld_ord
             ,sum(case when is_t1_flow = 1 then t3.night end) as ld_jianye
             ,sum(case when is_t1_flow = 1 then t3.gmv end) as ld_gmv
@@ -143,6 +143,7 @@ left join (
         left join query_od t2 
         on t1.query = t2.query
         and t1.channel = t2.channel
+        and t1.uid = t2.uid
         left join (
             -- 离店订单业绩
             select  
@@ -157,7 +158,7 @@ left join (
             WHERE nvl(landlord_source_channel_code, 0) NOT IN ('fdlx010901', 'skmy1907')
             and is_risk_order = 0
             and checkout_date  >= '2026-03-01'
-            and checkout_date <= date_sub(current_date,2)
+            and checkout_date <= date_sub(current_date,1)
             and is_done = 1
             and is_success_order = 1 
             group by 1,2
@@ -175,7 +176,7 @@ left join (
             FROM dws.dws_order_finance
             WHERE nvl(landlord_source_channel_code, 0) NOT IN ('fdlx010901', 'skmy1907')
             and create_date  >= '2026-03-01'
-            and create_date <= date_sub(current_date,2)
+            and create_date <= date_sub(current_date,1)
             and is_risk_order = 0
             and is_success_order = 1
             group by 1,2
@@ -209,6 +210,7 @@ left join (
         left join query_od t2 
         on t1.query = t2.query
         and t1.channel = t2.channel 
+        and t1.uid = t2.uid
         left join (
             -- 离店订单业绩
             select  
