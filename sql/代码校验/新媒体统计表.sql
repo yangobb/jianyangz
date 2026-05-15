@@ -1,3 +1,4 @@
+
 with query_info as (
 select t1.query
     ,team
@@ -56,6 +57,7 @@ on t1.query = t11.query
 left join (
     -- 流量曝光表
     select query
+        ,dt
         ,uid
         ,user_id
         ,house_id 
@@ -64,7 +66,7 @@ left join (
     from ads.ads_flow_tujia_redbook_shuangliu_recommend_d
     where dt >= '2026-03-01'
     and uid != 'visitor000000' 
-    group by 1,2,3,4,5,6
+    group by 1,2,3,4,5,6,7
 ) t12 
 on t1.query = t12.query 
 left join (
